@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sound-Based Machine Health Monitor</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>🔊 Sound-Based Machine Health Monitor</h1>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 4px;">
+          Acoustic condition monitoring and predictive anomaly detection
+        </p>
+      </div>
+      <div>
+        <span id="api-status" class="badge badge-online">Connecting...</span>
+      </div>
+    </header>
+
+    <!-- Error Alert Banner -->
+    <div id="alert-banner" class="alert-box"></div>
+
+    <!-- Quick Demos Card (FR-016) -->
+    <div class="card">
+      <h2>⚡ One-Click Demonstration Samples</h2>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 12px;">
+        Select preloaded industrial recordings to immediately test normal and abnormal operating conditions:
+      </p>
+      <div class="quick-demos" id="demo-buttons">
+        <button class="btn-demo" onclick="loadDemoSample('normal_fan_sample.wav', 'fan')">🌀 Normal Fan</button>
+        <button class="btn-demo" onclick="loadDemoSample('abnormal_fan_sample.wav', 'fan')">⚠️ Faulty Fan (Bearing Flutter)</button>
+        <button class="btn-demo" onclick="loadDemoSample('normal_pump_sample.wav', 'pump')">💧 Normal Pump</button>
+        <button class="btn-demo" onclick="loadDemoSample('abnormal_pump_sample.wav', 'pump')">⚠️ Faulty Pump (Cavitation)</button>
+      </div>
+    </div>
+
+    <!-- Audio Ingestion Card (FR-001, FR-002, FR-004) -->
+    <div class="card">
+      <h2>🎙️ Audio Input & Diagnostics</h2>
+      
+      <div class="drop-zone" id="drop-zone">
+        <p style="font-size: 1.1rem; font-weight: 500;">Drag & Drop audio file here or <span style="color: var(--accent-cyan); text-decoration: underline;">Browse</span></p>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Supported: WAV, MP3, WebM, OGG (1.0s – 10.0s, Max 10 MB)</p>
+        <input type="file" id="file-input" accept=".wav,.mp3,.webm,.ogg,.flac" style="display: none;">
+      </div>
+      <p id="selected-file-label" style="margin-top: 10px; font-size: 0.88rem; color: var(--accent-cyan); font-weight: 500;"></p>
+
+      <div class="controls-grid">
+        <div class="select-group">
+          <label for="machine-select">Machine Category:</label>
+          <select id="machine-select">
+            <option value="fan">Industrial Fan</option>
+            <option value="pump">Industrial Pump</option>
+            <option value="valve">Solenoid Valve</option>
+            <option value="slider">Slide Rail</option>
+            <option value="unspecified" selected>Unspecified Machine</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;">Live In-Browser Recording:</label>
+          <div class="mic-box">
+            <button id="btn-record" class="btn btn-rec" onclick="toggleRecording()">🔴 Start Recording</button>
+            <span id="record-timer" style="font-size: 0.88rem; color: var(--text-muted);">00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Playback Widget -->
+      <div id="playback-container" style="margin-top: 16px; display: none;">
+        <label style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px;">Audio Playback:</label>
+        <audio id="audio-player" controls style="width: 100%; height: 40px;"></audio>
+      </div>
+
+      <button id="btn-submit" class="btn btn-primary" onclick="submitAnalysis()">Analyze Acoustic Health</button>
+    </div>
+
+    <!-- Results Display Card (FR-008, FR-009, FR-010, FR-011) -->
+    <div id="results-card" class="card result-card">
+      <div class="status-header">
+        <div>
+          <h2 style="margin: 0; color: var(--text-main);">Diagnostic Results</h2>
+          <span id="res-timestamp" style="font-size: 0.8rem; color: var(--text-muted);"></span>
+        </div>
+        <div id="status-badge" class="status-badge status-normal">NORMAL</div>
+      </div>
+
+      <p id="res-summary" style="font-size: 1.05rem; line-height: 1.5; margin-bottom: 16px;"></p>
+
+      <div class="prob-bar-container">
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+          <span>Confidence: <strong id="res-confidence">0.0%</strong></span>
+          <span id="res-latency" style="color: var(--text-muted);">Turnaround: 0ms</span>
+        </div>
+        <div class="prob-bar">
+          <div id="bar-normal" class="prob-fill-normal" style="width: 50%;"></div>
+          <div id="bar-abnormal" class="prob-fill-abnormal" style="width: 50%;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">
+          <span>Normal: <span id="prob-normal-val">0%</span></span>
+          <span>Abnormal: <span id="prob-abnormal-val">0%</span></span>
+        </div>
+      </div>
+
+      <!-- Visualizations -->
+      <div class="viz-grid">
+        <div class="viz-box">
+          <img id="img-waveform" alt="Waveform Visualization">
+        </div>
+        <div class="viz-box">
+          <img id="img-spectrogram" alt="Spectrogram Visualization">
+        </div>
+      </div>
+    </div>
+
+    <!-- History Card (FR-012) -->
+    <div class="card">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>📋 Analysis History</h2>
+        <button class="btn-demo" onclick="fetchHistory()" style="padding: 4px 10px; font-size: 0.78rem;">🔄 Refresh</button>
+      </div>
+      <div style="overflow-x: auto;">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Timestamp</th>
+              <th>Category</th>
+              <th>Reference</th>
+              <th>Status</th>
+              <th>Confidence</th>
+            </tr>
+          </thead>
+          <tbody id="history-tbody">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">No records logged yet.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

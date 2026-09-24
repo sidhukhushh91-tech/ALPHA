@@ -1,0 +1,47 @@
+# ==============================================================================
+# Sound-Based Machine Health Monitor - Production & Development Dependencies
+# Python Target: >= 3.10, < 3.12 (Recommended: Python 3.10 or 3.11)
+# ==============================================================================
+
+# --- 1. Audio Processing & Signal Analysis ---
+# Core audio loading, STFT, Mel-Spectrogram, and MFCC feature extraction
+librosa==0.10.2.post1
+soundfile>=0.12.1
+scipy>=1.11.4
+numpy>=1.24.4,<2.0.0
+pydub>=0.25.1
+audioread>=3.0.1
+
+# --- 2. Machine Learning & Data Processing ---
+# Feature scaling, baseline classifiers (Random Forest, MLP), train/test split, metrics
+scikit-learn>=1.3.2
+pandas>=2.1.4
+joblib>=1.3.2
+
+# --- 3. Backend REST API & Server ---
+# High-performance asynchronous API framework and ASGI server
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+python-multipart>=0.0.9
+pydantic>=2.6.0
+
+# --- 4. Database & Persistence ---
+# SQLite ORM for structured analysis logs and metadata tracking
+sqlalchemy>=2.0.25
+
+# --- 5. Visualization & Reporting ---
+# Generation of spectrograms, waveform plots, and evaluation confusion matrices
+matplotlib>=3.8.2
+seaborn>=0.13.2
+
+# --- 6. Testing, Evaluation & QA ---
+# Unit, integration, negative testing, and FastAPI endpoint benchmarking
+pytest>=8.0.0
+pytest-asyncio>=0.23.5
+httpx>=0.26.0
+
+# ==============================================================================
+# Optional / Advanced Extensions (Uncomment if implementing deep learning CNN):
+# torch>=2.2.0
+# torchaudio>=2.2.0
+# ==============================================================================

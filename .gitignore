@@ -1,0 +1,29 @@
+# Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Pytest / Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases & logs
+*.db
+*.db-shm
+*.db-wal
+*.log
+
+# IDE & Editor artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
